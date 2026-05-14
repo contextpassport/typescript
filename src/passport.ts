@@ -60,20 +60,18 @@ export interface MakePassportInput {
 
 /** Canonical JSON: sorted keys at every level, no extra whitespace. */
 function canonical(value: unknown): string {
-  return JSON.stringify(value, sortedKeysReplacer(value));
+  return JSON.stringify(value, sortedKeysReplacer);
 }
 
-function sortedKeysReplacer(root: unknown) {
-  return function replace(this: unknown, _key: string, val: unknown): unknown {
-    if (val && typeof val === "object" && !Array.isArray(val)) {
-      const sorted: Record<string, unknown> = {};
-      for (const k of Object.keys(val as Record<string, unknown>).sort()) {
-        sorted[k] = (val as Record<string, unknown>)[k];
-      }
-      return sorted;
+function sortedKeysReplacer(_key: string, val: unknown): unknown {
+  if (val && typeof val === "object" && !Array.isArray(val)) {
+    const sorted: Record<string, unknown> = {};
+    for (const k of Object.keys(val as Record<string, unknown>).sort()) {
+      sorted[k] = (val as Record<string, unknown>)[k];
     }
-    return val;
-  };
+    return sorted;
+  }
+  return val;
 }
 
 export function payloadHash(payload: unknown): string {
