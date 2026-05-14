@@ -1,0 +1,38 @@
+{
+  "name": "@contextpassport/core",
+  "version": "1.0.0-alpha.1",
+  "description": "Reference TypeScript implementation of the Context Passport open standard for AI agent events.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist", "README.md", "LICENSE"],
+  "scripts": {
+    "build": "tsc",
+    "test": "node --test tests/",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "ai",
+    "agents",
+    "context-passport",
+    "audit",
+    "verification",
+    "provenance"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/contextpassport/typescript.git"
+  },
+  "homepage": "https://contextpassport.com",
+  "bugs": {
+    "url": "https://github.com/contextpassport/typescript/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.4.0"
+  }
+}
