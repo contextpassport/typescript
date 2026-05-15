@@ -1,5 +1,5 @@
 {
-  "name": "@contextpassport/core",
+  "name": "@context-passport/core",
   "version": "1.0.0-alpha.1",
   "description": "Reference TypeScript implementation of the Context Passport open standard for AI agent events.",
   "license": "Apache-2.0",
