@@ -8,8 +8,10 @@ A reference implementation of the [Context Passport](https://github.com/contextp
 ## Install
 
 ```bash
-npm install @contextpassport/core
+npm install @contextpassport/core@alpha
 ```
+
+(The `@alpha` tag is required while v1.0 is in prerelease. After `1.0.0` stable ships, `npm install @contextpassport/core` will work without a tag.)
 
 ## Usage
 
