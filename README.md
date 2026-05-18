@@ -8,13 +8,13 @@ A reference implementation of the [Context Passport](https://github.com/contextp
 ## Install
 
 ```bash
-npm install @context-passport/core
+npm install @contextpassport/core
 ```
 
 ## Usage
 
 ```ts
-import { makePassport, verifyChain } from "@context-passport/core";
+import { makePassport, verifyChain } from "@contextpassport/core";
 
 const root = makePassport({
   agentId:   "agent-researcher-01",
