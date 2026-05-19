@@ -35,9 +35,32 @@ const child = makePassport({
 console.log(verifyChain([root, child])); // true
 ```
 
+### Signed records (Ed25519)
+
+Produces records that are signature-verifiable by any conformant implementation, including the Python `context_passport.signing` module. Uses Node's built-in `crypto`; no external dependencies.
+
+```ts
+import {
+  makePassport, verifyChain,
+  signPassport, verifySignature, generateKeypair,
+} from "@contextpassport/core";
+
+const { privateKey, publicKey } = generateKeypair();
+
+const p = makePassport({
+  agentId:   "research-agent-01",
+  agentName: "Research Agent",
+  payload:   { input: "Analyze Q1 earnings", output: { summary: "APAC up 34%" } },
+});
+const signed = signPassport(p, privateKey, { keyId: "research-key-2026-05" });
+
+console.log(verifySignature(signed));            // true
+console.log(verifySignature(signed, publicKey)); // true (external public key)
+```
+
 ## Conformance
 
-This implementation targets **Core conformance** with the [Context Passport v1.0 conformance test suite](https://github.com/contextpassport/conformance-tests). Signed conformance is planned.
+This implementation passes both Core and Signed levels of the [Context Passport v1.0 conformance test suite](https://github.com/contextpassport/conformance-tests). Cross-implementation verification is exercised: signatures produced by the Python reference implementation verify under this TypeScript implementation byte-for-byte (and vice versa).
 
 ## Contributing
 

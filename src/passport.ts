@@ -41,6 +41,12 @@ export interface Passport {
     fork_point: string | null;
     lineage_root: string | null;
   };
+  signature?: {
+    algorithm: string;
+    key_id: string;
+    public_key?: string;
+    signature: string;
+  };
   created_at: string;
 }
 
