@@ -1,6 +1,6 @@
 {
   "name": "@contextpassport/core",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "description": "Reference TypeScript implementation of the Context Passport open standard for AI agent events.",
   "license": "Apache-2.0",
   "type": "module",
@@ -9,7 +9,7 @@
   "files": ["dist", "README.md", "LICENSE"],
   "scripts": {
     "build": "tsc",
-    "test": "tsx --test tests/passport.test.ts",
+    "test": "tsx --test tests/passport.test.ts tests/signing.test.ts tests/jcs.test.ts",
     "prepublishOnly": "npm run build"
   },
   "keywords": [

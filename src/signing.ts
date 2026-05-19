@@ -20,6 +20,7 @@ import {
 } from "node:crypto";
 
 import type { Passport } from "./passport.js";
+import { canonical as canonicalJcs } from "./passport.js";
 
 // ----- Public API ---------------------------------------------------------
 
@@ -127,23 +128,7 @@ function canonicalBytesForSigning(passport: Passport): Buffer {
   if (clone.signature && typeof clone.signature === "object") {
     (clone.signature as Record<string, unknown>).signature = "";
   }
-  return Buffer.from(canonicalJson(clone), "utf-8");
-}
-
-/** Canonical JSON: sort keys at every level, no extra whitespace. */
-function canonicalJson(value: unknown): string {
-  return JSON.stringify(value, sortedKeysReplacer);
-}
-
-function sortedKeysReplacer(_key: string, val: unknown): unknown {
-  if (val && typeof val === "object" && !Array.isArray(val)) {
-    const sorted: Record<string, unknown> = {};
-    for (const k of Object.keys(val as Record<string, unknown>).sort()) {
-      sorted[k] = (val as Record<string, unknown>)[k];
-    }
-    return sorted;
-  }
-  return val;
+  return Buffer.from(canonicalJcs(clone), "utf-8");
 }
 
 function derivePublicKey(privateKey: KeyObject): KeyObject {

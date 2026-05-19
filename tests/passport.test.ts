@@ -10,7 +10,7 @@ test("root passport has no parent", () => {
   });
   assert.equal(p.parent_id, null);
   assert.equal(p.integrity.parent_hash, null);
-  assert.equal(p.schema_version, "1.0");
+  assert.equal(p.schema_version, "2.0");
 });
 
 test("chain links correctly", () => {
