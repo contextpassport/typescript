@@ -62,7 +62,7 @@ console.log(verifySignature(signed, publicKey)); // true (external public key)
 
 ## Conformance
 
-This implementation passes both Core and Signed levels of the [Context Passport v1.0 conformance test suite](https://github.com/contextpassport/conformance-tests). Cross-implementation verification is exercised: signatures produced by the Python reference implementation verify under this TypeScript implementation byte-for-byte (and vice versa).
+This implementation passes both Core and Signed levels of the [Context Passport v2.0 conformance test suite](https://github.com/contextpassport/conformance-tests). Cross-implementation verification is exercised: signatures produced by the Python reference implementation verify under this TypeScript implementation byte-for-byte (and vice versa).
 
 ## Contributing
 
