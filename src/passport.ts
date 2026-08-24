@@ -116,7 +116,22 @@ export function integrityHash(payHash: string, parentIntegrity: string | null): 
   return "sha256:" + createHash("sha256").update(chainInput).digest("hex");
 }
 
+
+const EVENT_TYPE_RE = /^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)*$/;
+
+function assertValidEventType(eventType: string): void {
+  if (!EVENT_TYPE_RE.test(eventType)) {
+    throw new Error(
+      `eventType ${JSON.stringify(eventType)} is invalid; must match ` +
+        String(EVENT_TYPE_RE) +
+        " (e.g. 'commit' or 'acme.risk_review')"
+    );
+  }
+}
+
 export function makePassport(input: MakePassportInput): Passport {
+  const eventType = input.eventType ?? "commit";
+  assertValidEventType(eventType);
   const ts = Date.now().toString();
   const hex = randomBytes(6).toString("hex");
   const id = `ctx_${ts}_${hex}`;
@@ -142,7 +157,7 @@ export function makePassport(input: MakePassportInput): Passport {
       model: input.model ?? null,
     },
     event: {
-      type: input.eventType ?? "commit",
+      type: eventType,
       to_agent_id: input.toAgentId ?? null,
       timestamp: now,
     },
