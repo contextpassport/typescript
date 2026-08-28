@@ -1,0 +1,40 @@
+name: CI
+
+# This package is what people npm install when they adopt the standard. A
+# reference implementation that is not tested on every change is a reference
+# in name only, and a wrong hash shipped from here propagates into downstream
+# implementations as a "correct" reference.
+#
+# The weekly run catches rot in the toolchain even when nobody is committing.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: '17 6 * * 1'   # Mondays, 06:17 UTC
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Node ${{ matrix.node }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['18', '20', '22']   # package.json declares engines >=18
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      - run: npm ci
+
+      # Build before test. The published package ships compiled output, so a
+      # type error is a release failure even when the tests would have passed.
+      - run: npm run build
+
+      - run: npm test
