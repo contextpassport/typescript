@@ -14,6 +14,8 @@ import { payloadHash as payloadHashV1 } from "./compat/v1.js";
 export const SCHEMA_URL = "https://contextpassport.com/schema/v2.json";
 export const SCHEMA_VERSION = "2.0";
 
+const EVENT_TYPE_PATTERN = /^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)*$/;
+
 export interface Passport {
   $schema: string;
   schema_version: string;
@@ -126,6 +128,12 @@ export function makePassport(input: MakePassportInput): Passport {
   const parentId = input.parent?.id ?? null;
   const intHash = integrityHash(payHash, parentIntegrity);
   const now = new Date().toISOString();
+  const eventType = input.eventType ?? "commit";
+  if (typeof eventType !== "string" || !EVENT_TYPE_PATTERN.test(eventType)) {
+    throw new TypeError(
+      `eventType must match ${EVENT_TYPE_PATTERN.source}; received ${JSON.stringify(eventType)}`,
+    );
+  }
 
   return {
     $schema: SCHEMA_URL,
@@ -142,7 +150,7 @@ export function makePassport(input: MakePassportInput): Passport {
       model: input.model ?? null,
     },
     event: {
-      type: input.eventType ?? "commit",
+      type: eventType,
       to_agent_id: input.toAgentId ?? null,
       timestamp: now,
     },
