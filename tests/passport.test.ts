@@ -13,6 +13,43 @@ test("root passport has no parent", () => {
   assert.equal(p.schema_version, "2.0");
 });
 
+test("accepts specified and namespaced event types", () => {
+  const specifiedTypes = [
+    "commit", "fork", "checkpoint", "revert", "branch", "merge", "spawn", "retry",
+    "timeout", "error", "override", "consent", "escalate", "redact", "audit",
+  ];
+  for (const eventType of [...specifiedTypes, "tool_call", "acme.risk_review"]) {
+    const passport = makePassport({
+      agentId: "a1",
+      agentName: "Agent One",
+      payload: {},
+      eventType,
+    });
+    assert.equal(passport.event.type, eventType);
+  }
+
+});
+
+test("rejects event types outside the v2 schema pattern", () => {
+  const invalidTypes = ["", "COMMIT", "commit-retry", "1commit", "commit\n", ".commit", "commit."];
+  for (const eventType of invalidTypes) {
+    assert.throws(
+      () => makePassport({ agentId: "a1", agentName: "Agent One", payload: {}, eventType }),
+      { name: "TypeError", message: /eventType must match/ },
+    );
+  }
+
+  assert.throws(
+    () => makePassport({
+      agentId: "a1",
+      agentName: "Agent One",
+      payload: {},
+      eventType: ["commit"] as unknown as string,
+    }),
+    { name: "TypeError", message: /eventType must match/ },
+  );
+});
+
 test("chain links correctly", () => {
   const a = makePassport({
     agentId: "a1", agentName: "Agent One",
