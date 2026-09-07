@@ -2,12 +2,73 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   makePassport,
+  verifyChain,
   signPassport,
   verifySignature,
   generateKeypair,
   publicKeyFromBase64,
   publicKeyToBase64,
+  type Passport,
 } from "../src/index.js";
+
+// verifyChain must consult the signature when a record carries one. The hash
+// chain binds only the payload and the parent link; the signature is what
+// binds created_by, event and trace_id. Before this, a signed record with a
+// forged author returned true from the one function every adopter calls first.
+function signedChain(): Passport[] {
+  const { privateKey, publicKey } = generateKeypair();
+  const first = signPassport(
+    makePassport({ agentId: "agent-a", agentName: "Agent A", payload: { input: "x", output: "y" } }),
+    privateKey, { keyId: "key-1", publicKey },
+  );
+  const second = signPassport(
+    makePassport({ agentId: "agent-b", agentName: "Agent B", payload: { input: "y", output: "z" }, parent: first }),
+    privateKey, { keyId: "key-1", publicKey },
+  );
+  return [first, second];
+}
+
+test("verifyChain: pristine signed chain verifies", () => {
+  assert.equal(verifyChain(signedChain()), true);
+});
+
+const forgeries: Array<[string, (r: Passport) => void]> = [
+  ["created_by.agent_id", (r) => { r.created_by.agent_id = "attacker"; }],
+  ["event.type",          (r) => { r.event.type = "override"; }],
+  ["event.timestamp",     (r) => { r.event.timestamp = "2025-01-01T00:00:00Z"; }],
+  ["event.to_agent_id",   (r) => { r.event.to_agent_id = "attacker"; }],
+  ["trace_id",            (r) => { r.trace_id = "forged"; }],
+];
+
+for (const [name, mutate] of forgeries) {
+  test(`verifyChain: forged ${name} on a signed record fails`, () => {
+    const chain = signedChain();
+    mutate(chain[0]);
+    // Hash-only verification cannot see these fields. The first assertion
+    // documents the gap; the second proves the signature closes it.
+    assert.equal(verifyChain(chain, { checkSignatures: false }), true);
+    assert.equal(verifyChain(chain), false);
+  });
+}
+
+test("verifyChain: payload forgery fails either way", () => {
+  const chain = signedChain();
+  (chain[0].payload as { output: string }).output = "FORGED";
+  assert.equal(verifyChain(chain, { checkSignatures: false }), false);
+  assert.equal(verifyChain(chain), false);
+});
+
+test("verifyChain: unsigned chain behaviour unchanged", () => {
+  const first = makePassport({ agentId: "a", agentName: "A", payload: { k: 1 } });
+  const second = makePassport({ agentId: "b", agentName: "B", payload: { k: 2 }, parent: first });
+  assert.equal(verifyChain([first, second]), true);
+  // No signature block, nothing to check, hash-only behaviour preserved. This
+  // also pins the remaining gap: an unsigned envelope is still unbound. That
+  // is the 3.0 RFC's job, and rejecting unsigned chains here would break
+  // every 2.0 adopter.
+  first.created_by.agent_id = "attacker";
+  assert.equal(verifyChain([first, second]), true);
+});
 
 test("sign and verify roundtrip", () => {
   const { privateKey, publicKey } = generateKeypair();

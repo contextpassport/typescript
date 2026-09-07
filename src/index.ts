@@ -7,7 +7,7 @@ export {
   SCHEMA_VERSION,
 } from "./passport.js";
 
-export type { Passport, MakePassportInput } from "./passport.js";
+export type { Passport, MakePassportInput, VerifyChainOptions } from "./passport.js";
 
 export {
   signPassport,
