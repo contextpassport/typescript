@@ -10,6 +10,10 @@
 
 import { createHash, randomBytes } from "node:crypto";
 import { payloadHash as payloadHashV1 } from "./compat/v1.js";
+// signing.js imports `canonical` from this module. The cycle is safe: both
+// sides use the other's export only inside function bodies, never during
+// module evaluation, so the binding is populated by the time it is called.
+import { verifySignature } from "./signing.js";
 
 export const SCHEMA_URL = "https://contextpassport.com/schema/v2.json";
 export const SCHEMA_VERSION = "2.0";
@@ -170,7 +174,23 @@ export function makePassport(input: MakePassportInput): Passport {
   };
 }
 
-export function verifyChain(passports: readonly Passport[]): boolean {
+export interface VerifyChainOptions {
+  /**
+   * Check the signature on every record that carries one. Defaults to true,
+   * because the hash chain binds only the payload and the parent link: a
+   * record's created_by, event and trace_id can be rewritten without
+   * disturbing the chain, and the signature is what binds them. A signed
+   * record with a forged author must not verify. Set false to restore
+   * hash-only verification.
+   */
+  checkSignatures?: boolean;
+}
+
+export function verifyChain(
+  passports: readonly Passport[],
+  options: VerifyChainOptions = {},
+): boolean {
+  const checkSignatures = options.checkSignatures ?? true;
   let prev: Passport | null = null;
   for (const p of passports) {
     const version = String(p.schema_version ?? "2.0");
@@ -180,6 +200,7 @@ export function verifyChain(passports: readonly Passport[]): boolean {
     const parentIntegrity = prev?.integrity.integrity_hash ?? null;
     const expected = integrityHash(payHash, parentIntegrity);
     if (p.integrity.integrity_hash !== expected) return false;
+    if (checkSignatures && p.signature && !verifySignature(p)) return false;
     prev = p;
   }
   return true;
